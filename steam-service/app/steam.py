@@ -15,6 +15,7 @@ async def get_games_from_steam(steam_id: str) -> list:
         response = await client.get(url, params=params)
         data = response.json()
         games = data.get("response", {}).get("games", [])
+        games = [{"name": g["name"], "playtime": g["playtime_forever"]} for g in games]
         logger.info(f"Got {len(games)} games for {steam_id}")
         return games
     
