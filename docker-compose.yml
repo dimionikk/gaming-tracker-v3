@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
@@ -25,8 +30,10 @@ services:
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
   steam-service:
@@ -41,7 +48,10 @@ services:
       STEAM_API_KEY: ${STEAM_API_KEY}
       REDIS_URL: redis://redis:6379
     depends_on:
-      - postgres
-      - redis
-      - user-service
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      user-service:
+        condition: service_started
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8001"
