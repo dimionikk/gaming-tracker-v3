@@ -1,0 +1,9 @@
+fastapi 
+uvicorn
+sqlalchemy
+loguru
+pydantic-settings
+python-jose[cryptography]
+alembic
+asyncpg
+argon2-cffi
