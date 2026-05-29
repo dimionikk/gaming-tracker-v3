@@ -27,5 +27,5 @@ async def login(data:schemas.UserLogin,session:AsyncSession=Depends(get_async_se
         raise HTTPException(status_code=404)
     if not auth.veryfy_password(data.password,existing_user.password):
         raise HTTPException(status_code=401)
-    token = auth.create_access_token({"sub": existing_user.email, "user_id": existing_user.id})
+    token = auth.create_access_token({"sub": existing_user.email, "user_id": str(existing_user.id)})
     return {"access_token": token, "token_type": "bearer"}

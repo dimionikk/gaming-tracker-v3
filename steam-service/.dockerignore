@@ -7,4 +7,3 @@ venv
 .gitignore
 README.md
 requirements-dev.txt
-alembic/versions
