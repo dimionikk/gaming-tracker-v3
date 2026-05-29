@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy
+alembic
+pydantic-settings
+python-jose[cryptography]
+loguru
+redis[asyncio]
+httpx
+asyncpg
