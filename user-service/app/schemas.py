@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 from uuid import UUID
+from typing import Optional
+
 class UserCreate(BaseModel):
     username:str
     email:str
@@ -17,3 +19,8 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class UserUpdate(BaseModel):
+    username:Optional[str]=None
+    email:Optional[str]=None
+    password:Optional[str]=None

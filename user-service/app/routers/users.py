@@ -3,6 +3,7 @@ from sqlalchemy import select
 from app import models,schemas,auth
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_async_session
+from uuid import UUID
 
 router=APIRouter(prefix="/users",tags=["users"])
 
@@ -29,3 +30,35 @@ async def login(data:schemas.UserLogin,session:AsyncSession=Depends(get_async_se
         raise HTTPException(status_code=401)
     token = auth.create_access_token({"sub": existing_user.email, "user_id": str(existing_user.id)})
     return {"access_token": token, "token_type": "bearer"}
+
+@router.get("/me", response_model=schemas.UserResponse)
+async def get_me(current_user: dict = Depends(auth.get_current_user), session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(models.User).where(models.User.id == UUID(current_user["user_id"])))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404)
+    return user
+
+@router.delete("/me", status_code=204)
+async def delete_me(current_user: dict = Depends(auth.get_current_user), session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(models.User).where(models.User.id == UUID(current_user["user_id"])))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404)
+    await session.delete(user)
+    await session.commit()
+
+@router.patch("/me", response_model=schemas.UserResponse)
+async def update_me(data: schemas.UserUpdate, current_user: dict = Depends(auth.get_current_user), session: AsyncSession = Depends(get_async_session)):
+    result = await session.execute(select(models.User).where(models.User.id == UUID(current_user["user_id"])))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404)
+    if data.username:
+        user.username = data.username
+    if data.email:
+        user.email = data.email
+    if data.password:
+        user.password = auth.hash_password(data.password)
+    await session.commit()
+    return user
